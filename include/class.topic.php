@@ -311,10 +311,10 @@ implements TemplateVariable {
         return $topic;
     }
 
-    static function getHelpTopics($publicOnly=false, $disabled=false, $localize=true, $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
+    static function getHelpTopics($publicOnly=false, $disabled=false, $localize=true, $multilevel=false, $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
         global $cfg;
         static $topics, $names = array();
-
+        
         // If localization is specifically requested, then rebuild the list.
         if (!$names || $localize) {
             $objects = self::objects()->values_flat(
@@ -338,15 +338,18 @@ implements TemplateVariable {
                 $T = CustomDataTranslation::translate($tag);
                 return $T != $tag ? $T : $default;
             };
-
+            
+            
             // Resolve parent names
             foreach ($topics as $id=>$info) {
                 $name = $localize_this($id, $info['topic']);
                 $loop = array($id=>true);
                 $parent = false;
                 while (($pid = $info['pid']) && ($info = $topics[$info['pid']])) {
-                    $name = sprintf('%s / %s', $localize_this($pid, $info['topic']),
-                        $name);
+                    if (!$multilevel) {
+                        $name = sprintf('%s / %s', $localize_this($pid, $info['topic']),
+                            $name);
+                    }
                     if ($parent && $parent['disabled'])
                         // Cascade disabled flag
                         $topics[$id]['disabled'] = true;
@@ -361,40 +364,82 @@ implements TemplateVariable {
 
         // Apply requested filters
         $requested_names = array();
+        
+        if ($multilevel) {
+            // Build multilevel topics array
+            
+            $requested_names[0] = self::buildNextLevelTopicsArray($topics, $names, 0, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client);
+            
+        } else {
+            foreach ($names as $id=>$n) {
+                if (!self::applyFiltersToTopic($id, $topics, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client))
+                    continue;
+
+                if ($disabled === self::DISPLAY_DISABLED && $info['disabled'])
+                    $n .= " - ".__("(disabled)");
+                $requested_names[$id] = $n;
+            }
+            
+            // If localization requested and the current locale is not the
+            // primary, the list may need to be sorted. Caching is ok here,
+            // because the locale is not going to be changed within a single
+            // request.
+            if ($localize && $cfg->getTopicSortMode() == self::SORT_ALPHA)
+                return Internationalization::sortKeyedList($requested_names);
+        }
+
+        return $requested_names;
+    }
+    
+    static function buildNextLevelTopicsArray($topics, $names, $pid, $publicOnly=false, $disabled=false, $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
+        $requested_names = array('name'=> $names[$pid], 'topics'=>array());
         foreach ($names as $id=>$n) {
             $info = $topics[$id];
+            if ($info['pid'] == $pid) {
+                if (self::applyFiltersToTopic($id, $topics, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client)) {
+                    $requested_names['topics'][$id] = self::buildNextLevelTopicsArray($topics, $names, $id, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client);
+                }
+            }
+        }
+        
+        return $requested_names;
+    }
+    
+    static function applyFiltersToTopic($id, $topics, $publicOnly=false, $disabled=false, $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
+        $pass = true;
+        
+        // The first topic to filter is the one with $id.
+        $info = array('pid'=>$id);
+        
+        // Verify if the topic or it parents have filters and apply them
+        $loop = array($id=>true);
+        while (($pid = $info['pid']) && ($info = $topics[$info['pid']])) {
             $to = TopicOrganizationModel::objects()->filter(array(
-                'topic_id'=>$id
+                'topic_id'=>$pid
             ));
             $to_org_ids=array();
             foreach ($to as $oid=>$to_obj) {
                 array_push($to_org_ids,$to_obj->organization_id);
             }
             if ($publicOnly && !$info['public'])
-                continue;
+                $pass = false;
             if (!$disabled && $info['disabled'])
-                continue;
+                $pass = false;
             if ($primaryContactOnly && $info['orgpconly'] == 1 && $client && $client->isPrimaryContact() == 0)
-                continue;
+                $pass = false;
             if ($limitByOrganization && $client && count($to) > 0 && !in_array($client->getOrganization()->id, $to_org_ids))
-                continue;
-            if ($disabled === self::DISPLAY_DISABLED && $info['disabled'])
-                $n .= " - ".__("(disabled)");
-            $requested_names[$id] = $n;
+                $pass = false;
+            
+            if (!$pass || isset($loop[$info['pid']]))
+                break;
+            $loop[$info['pid']] = true;
         }
-
-        // If localization requested and the current locale is not the
-        // primary, the list may need to be sorted. Caching is ok here,
-        // because the locale is not going to be changed within a single
-        // request.
-        if ($localize && $cfg->getTopicSortMode() == self::SORT_ALPHA)
-            return Internationalization::sortKeyedList($requested_names);
-
-        return $requested_names;
+        
+        return $pass;
     }
 
-    static function getPublicHelpTopics($client) {
-        return self::getHelpTopics(true, false, true, true, true, $client);
+    static function getPublicHelpTopics($multilevel, $client) {
+        return self::getHelpTopics(true, false, true, $multilevel, true, true, $client);
     }
 
     static function getAllHelpTopics($localize=false) {

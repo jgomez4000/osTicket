@@ -72,12 +72,15 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
                           $(document.head).append(json.media);
                         }
                       });">
-                <option value="" selected="selected">&mdash; <?php echo __('Select a Help Topic');?> &mdash;</option>
                 <?php
-                if($topics=Topic::getPublicHelpTopics($thisclient)) {
-                    foreach($topics as $id =>$name) {
+                $topics=Topic::getPublicHelpTopics(true, $thisclient);
+                ?>
+                    <option value="" selected="selected">&mdash; <?php echo __('Select a Help Topic');?> &mdash;</option>
+                <?php
+                if($topics) {
+                    foreach($topics[0]['topics'] as $id =>$topicInfo) {
                         echo sprintf('<option value="%d" %s>%s</option>',
-                                $id, ($info['topicId']==$id)?'selected="selected"':'', $name);
+                                $id, ($info['topicId']==$id)?'selected="selected"':'', $topicInfo['name']);
                     }
                 } else { ?>
                     <option value="0" ><?php echo __('General Inquiry');?></option>
