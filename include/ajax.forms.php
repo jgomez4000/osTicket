@@ -14,35 +14,103 @@ class DynamicFormsAjaxAPI extends AjaxController {
         }
     }
 
-    function getFormsForHelpTopic($topic_id, $client=false) {
-        if (!($topic = Topic::lookup($topic_id)))
-            Http::response(404, 'No such help topic');
-
-        if ($_GET || isset($_SESSION[':form-data'])) {
-            if (!is_array($_SESSION[':form-data']))
-                $_SESSION[':form-data'] = array();
-            $_SESSION[':form-data'] = array_merge($_SESSION[':form-data'],
-                    Format::htmlchars($_GET));
+    static function dynamic_select_for_help_topic($the_array, $element_name, $label = '', $init_value = '') {
+        $menu = '<tr><td>';
+        if ($label != '') {
+            $menu .= '
+            <label for="'.$element_name.'">'.$label.'</label>';
         }
-
-        foreach ($topic->getForms() as $form) {
-            if (!$form->hasAnyVisibleFields())
-                continue;
-            ob_start();
-            $form->getForm($_SESSION[':form-data'])->render(!$client);
-            $html .= ob_get_clean();
-            ob_start();
-            print $form->getMedia();
-            $media .= ob_get_clean();
+        
+        $menu .= '
+            <select name="'.$element_name.'" id="'.$element_name.'" onchange="javascript:
+                    
+                    var data = $(\':input[name]\', \'#dynamic-form\').serialize();
+                    $.ajax(
+                      \'ajax.php/form/help-topic/\' + this.value,
+                      {
+                        data: data,
+                        dataType: \'json\',
+                        success: function(json) {
+                          var currentRowSelect = $(\''.$element_name.'\').closest(\'tr\');
+                          if (json.hasNestedChilds) {
+                            currentRowSelect.nextAll().remove();
+                            currentRowSelect.after(json.html);
+                            $(\'#dynamic-form\').empty();
+                          } else {
+                            currentRowSelect.nextAll().remove();
+                            $(\'#dynamic-form\').empty().append(json.html);
+                          }
+                          $(document.head).append(json.media);
+                        }
+                      });
+            ">';
+        
+        $curr_val = $init_value;
+        
+        foreach ($the_array as $key => $value) {
+            $menu .= '
+                            <option value="'.$key.'"';
+            if ($key == $curr_val) {
+                $menu .= ' selected="selected"';
+            }
+            $menu .= '>'.$value.'</option>';
         }
+        $menu .= '
+            </select>';
+        
+        $menu .= '<font class="error">*&nbsp;</font>';
+        $menu .= '</td></tr>';
+        return $menu;
+    }
+    
+    function getFormsForHelpTopic($topic_id, $client=false, $thisclient=null) {
+        
+        $topic_id = intval($topic_id);
+        $topic_and_sublevel = Topic::getPublicHelpTopicAndSublevel($topic_id, $thisclient);
+        
+        $hasNestedChilds = false;
+        if (count($topic_and_sublevel['childs']) > 0) {
+            $hasNestedChilds = true;
+            
+            $topic_and_sublevel['childs'] = array(0=>'Select a Help Topic') + $topic_and_sublevel['childs'];
+            ob_start();
+            $html = ob_get_clean();
+            $html .= self::dynamic_select_for_help_topic($topic_and_sublevel['childs'], 'topicId'.($topic_and_sublevel['info']['number_of_parents'] + 1), '', 0);
+            
+            $media = ob_get_clean();
+        } else {
+            if (!($topic = Topic::lookup($topic_id)))
+                Http::response(404, 'No such help topic');
+
+            if ($_GET || isset($_SESSION[':form-data'])) {
+                if (!is_array($_SESSION[':form-data']))
+                    $_SESSION[':form-data'] = array();
+                $_SESSION[':form-data'] = array_merge($_SESSION[':form-data'],
+                        Format::htmlchars($_GET));
+            }
+
+            foreach ($topic->getForms() as $form) {
+                if (!$form->hasAnyVisibleFields())
+                    continue;
+                ob_start();
+                $form->getForm($_SESSION[':form-data'])->render(!$client);
+                $html .= ob_get_clean();
+                ob_start();
+                print $form->getMedia();
+                $media .= ob_get_clean();
+            }
+        }
+        
         return $this->encode(array(
             'media' => $media,
             'html' => $html,
+            'hasNestedChilds' => $hasNestedChilds
         ));
     }
 
     function getClientFormsForHelpTopic($topic_id) {
-        return $this->getFormsForHelpTopic($topic_id, true);
+        global $thisclient;
+        return $this->getFormsForHelpTopic($topic_id, true, $thisclient);
     }
 
     function getFieldConfiguration($field_id) {

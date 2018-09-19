@@ -11,10 +11,16 @@ $info=($_POST && $errors)?Format::htmlchars($_POST):$info;
 
 $form = null;
 if (!$info['topicId']) {
-    if (array_key_exists('topicId',$_GET) && preg_match('/^\d+$/',$_GET['topicId']) && Topic::lookup($_GET['topicId']))
-        $info['topicId'] = intval($_GET['topicId']);
-    else
+    $iter = 0;
+    while (array_key_exists('topicId'.$iter, $_GET)) {
+        if (preg_match('/^\d+$/',$_GET['topicId'.$iter]) && Topic::lookup($_GET['topicId'.$iter])) {
+            $info['topicId'] = intval($_GET['topicId'.$iter]);
+        }
+        ++$iter;
+    }
+    if (!$info['topicId']) {
         $info['topicId'] = $cfg->getDefaultTopicId();
+    }
 }
 
 $forms = array();
@@ -60,7 +66,19 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
     </td></tr>
     <tr>
         <td colspan="2">
-            <select id="topicId" name="topicId" onchange="javascript:
+            <?php
+            $topics=Topic::getPublicHelpTopics(true, $thisclient);
+            $iter = 0;
+            
+            if ($topics) {
+                $topicValues = $topics[$iter]['topics'];
+            } else {
+                $topicValues = array();
+            }
+            
+            ?>
+            <select id="<?= "topicId0" ?>" name="<?= "topicId0" ?>" onchange="javascript:
+                    
                     var data = $(':input[name]', '#dynamic-form').serialize();
                     $.ajax(
                       'ajax.php/form/help-topic/' + this.value,
@@ -68,17 +86,23 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
                         data: data,
                         dataType: 'json',
                         success: function(json) {
-                          $('#dynamic-form').empty().append(json.html);
+                          var currentRowSelect = $('#topicId0').closest('tr');
+                          if (json.hasNestedChilds) {
+                            currentRowSelect.nextAll().remove();
+                            currentRowSelect.after(json.html);
+                            $('#dynamic-form').empty();
+                          } else {
+                            currentRowSelect.nextAll().remove();
+                            $('#dynamic-form').empty().append(json.html);
+                          }
                           $(document.head).append(json.media);
                         }
-                      });">
+                      });
+            ">
+                <option value="" selected="selected">&mdash; <?php echo __('Select a Help Topic');?> &mdash;</option>
                 <?php
-                $topics=Topic::getPublicHelpTopics(true, $thisclient);
-                ?>
-                    <option value="" selected="selected">&mdash; <?php echo __('Select a Help Topic');?> &mdash;</option>
-                <?php
-                if($topics) {
-                    foreach($topics[0]['topics'] as $id =>$topicInfo) {
+                if(count($topicValues) > 0) {
+                    foreach($topicValues as $id =>$topicInfo) {
                         echo sprintf('<option value="%d" %s>%s</option>',
                                 $id, ($info['topicId']==$id)?'selected="selected"':'', $topicInfo['name']);
                     }

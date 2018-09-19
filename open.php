@@ -28,6 +28,19 @@ if ($_POST) {
         elseif(strcmp($_SESSION['captcha'], md5(strtoupper($_POST['captcha']))))
             $errors['captcha']=sprintf('%s - %s', __('Invalid'), __('Please try again!'));
     }
+    
+    // Search for all the help topic selects' values. Keep the greatest 'topicIdX'
+    $greatest_topic_id_x = 0;
+    $greatest_topic_id_x_value = 0;
+    foreach ($vars as $key=>$value) {
+        if (substr($key, 0, 7) == 'topicId') {
+            $x = intval(substr($key, 7, strlen($key) - 7));
+            if ($x > $greatest_topic_id_x) {
+                $greatest_topic_id_x_value = $value;
+            }
+        }
+    }
+    $vars['topicId'] = $greatest_topic_id_x_value;
 
     $tform = TicketForm::objects()->one()->getForm($vars);
     $messageField = $tform->getField('message');

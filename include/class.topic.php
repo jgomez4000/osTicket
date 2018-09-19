@@ -441,6 +441,67 @@ implements TemplateVariable {
     static function getPublicHelpTopics($multilevel, $client) {
         return self::getHelpTopics(true, false, true, $multilevel, true, true, $client);
     }
+    
+    static function getPublicHelpTopicAndSublevel($id, $client) {
+        return self::getHelpTopicAndSublevel($id, true, false, true, true, $client);
+    }
+    
+    static function getHelpTopicAndSublevel($searchedId, $publicOnly=false, $disabled=false, $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
+        static $topics;
+        
+        $objects = self::objects()->values_flat(
+            'topic_id', 'topic_pid', 'ispublic', 'isactive', 'orgpconly', 'topic'
+        )
+        ->order_by('sort');
+
+        // Fetch information for all topics, in declared sort order
+        $topics = array();
+        foreach ($objects as $T) {
+            list($id, $pid, $pub, $act, $orgpconly, $topic) = $T;
+            $topics[$id] = array('pid'=>$pid, 'public'=>$pub,
+                'disabled'=>!$act, 'orgpconly'=>$orgpconly, 'topic'=>$topic);
+        }
+        
+        static $topic = array('info' => null, 'childs' => array());
+        $searched_topic_disabled = false;
+        
+        foreach ($topics as $id=>$info) {
+            if ($id === $searchedId) {
+                if (self::applyFiltersToTopic($id, $topics, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client)) {
+                    $topic['info'] = array('pid'=>$info['pid'], 'public'=>$info['pub'],
+                        'orgpconly'=>$info['orgpconly'], 'topic'=>$info['topic']);
+                } else {
+                    $searched_topic_disabled = true;
+                }
+                break;
+            }
+        }
+        if (!$searched_topic_disabled) {
+            // Count the number of parents of the searched topic
+            $info = array('pid'=>$topic['info']['pid']);
+            $loop = array($id=>true);
+            $number_of_parents = 0;
+            while (($pid = $info['pid']) && ($info = $topics[$info['pid']])) {
+                $number_of_parents += 1;
+                if (isset($loop[$info['pid']]))
+                    break;
+                $loop[$info['pid']] = true;
+            }
+            $topic['info']['number_of_parents'] = $number_of_parents;
+            
+            foreach ($topics as $id=>$info) {
+                if ($info['pid'] === $searchedId) {
+                    if (self::applyFiltersToTopic($id, $topics, $publicOnly, $disabled, $primaryContactOnly, $limitByOrganization, $client)) {
+                        $topic['childs'][$id] = $info['topic'];
+                    }
+                }
+            }
+
+            return $topic;
+        } else {
+            return null;
+        }
+    }
 
     static function getAllHelpTopics($localize=false) {
         return self::getHelpTopics(false, true, $localize);
