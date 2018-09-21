@@ -26,7 +26,7 @@ if($topic && $_REQUEST['a']!='add') {
     $qs += array('a' => $_REQUEST['a']);
     $forms = TicketForm::objects();
 }
-$info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
+$info=Format::htmlchars(($errors && $_POST)?$_POST:$info, true);
 ?>
 
 <h2><?php echo $title; ?>

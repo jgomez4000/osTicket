@@ -163,6 +163,9 @@ var scp_prep = function() {
 
     $('form.save, form:has(table.list)').submit(function() {
         $(window).unbind('beforeunload');
+        // Disable staff-side Post Reply/Open buttons to help prevent
+        // duplicate POST
+        $(':submit', $(this)).attr('disabled', true);
         $('#overlay, #loading').show();
         return true;
      });
@@ -193,6 +196,13 @@ var scp_prep = function() {
         }
      });
 
+    $('form select#cannedResp').select2({width: '350px'});
+    $('form select#cannedResp').on('select2:opening', function (e) {
+        var redactor = $('.richtext', $(this).closest('form')).data('redactor');
+        if (redactor)
+            redactor.selection.save();
+    });
+
     $('form select#cannedResp').change(function() {
 
         var fObj = $(this).closest('form');
@@ -214,9 +224,10 @@ var scp_prep = function() {
                     var box = $('#response',fObj),
                         redactor = box.data('redactor');
                     if(canned.response) {
-                        if (redactor)
+                        if (redactor) {
+                            redactor.selection.restore();
                             redactor.insert.html(canned.response);
-                        else
+                        } else
                             box.val(box.val() + canned.response);
 
                         if (redactor)
@@ -376,7 +387,8 @@ var scp_prep = function() {
            $('input[name^='+attr+']', ui.item.parent('tbody')).each(function(i, el) {
                $(el).val(i + 1 + offset);
            });
-       }
+       },
+       'cancel': ':input,button,div[contenteditable=true]'
    });
 
     // Scroll to a stop or top on scroll-up click

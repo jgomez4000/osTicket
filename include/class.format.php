@@ -322,7 +322,7 @@ class Format {
             'hook_tag' => function($e, $a=0) { return Format::__html_cleanup($e, $a); },
             'elements' => '*+iframe',
             'spec' =>
-            'iframe=-*,height,width,type,style,src(match="`^(https?:)?//(www\.)?(youtube|dailymotion|vimeo)\.com/`i"),frameborder'.($options['spec'] ? '; '.$options['spec'] : ''),
+            'iframe=-*,height,width,type,style,src(match="`^(https?:)?//(www\.)?(youtube|dailymotion|vimeo|player.vimeo)\.com/`i"),frameborder'.($options['spec'] ? '; '.$options['spec'] : ''),
         );
 
         return Format::html($html, $config);
@@ -349,8 +349,13 @@ class Format {
     function htmlchars($var, $sanitize = false) {
         static $phpversion = null;
 
-        if (is_array($var))
-            return array_map(array('Format', 'htmlchars'), $var);
+        if (is_array($var)) {
+            $result = array();
+            foreach ($var as $k => $v)
+                $result[$k] = self::htmlchars($v, $sanitize);
+
+            return $result;
+        }
 
         if ($sanitize)
             $var = Format::sanitize($var);
@@ -609,7 +614,7 @@ class Format {
         return $tz;
     }
 
-    function parseDatetime($date, $locale=null, $format=false) {
+    function parseDateTime($date, $locale=null, $format=false) {
         global $cfg;
 
         if (!$date)
@@ -889,17 +894,10 @@ class Format {
           return sprintf($timeDiff >= 0 ? __('%d hours ago') : __('in %d hours'), $absTimeDiff / 3600);
         }
 
-        // within 2 days
-        $days2 = 2 * 86400;
-        if ($absTimeDiff < $days2) {
-            // XXX: yesterday / tomorrow?
-          return $absTimeDiff >= 0 ? __('yesterday') : __('tomorrow');
-        }
-
         // within 29 days
         $days29 = 29 * 86400;
         if ($absTimeDiff < $days29) {
-          return sprintf($timeDiff >= 0 ? __('%d days ago') : __('in %d days'), $absTimeDiff / 86400);
+          return sprintf($timeDiff >= 0 ? __('%d days ago') : __('in %d days'), round($absTimeDiff / 86400));
         }
 
         // within 60 days

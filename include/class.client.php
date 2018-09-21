@@ -398,7 +398,7 @@ class ClientAccount extends UserAccount {
         global $cfg;
 
         // FIXME: Updates by agents should go through UserAccount::update()
-        global $thisstaff;
+        global $thisstaff, $thisclient;
         if ($thisstaff)
             return parent::update($vars, $errors);
 
@@ -456,6 +456,8 @@ class ClientAccount extends UserAccount {
             Signal::send('auth.pwchange', $this->getUser(), $info);
             $this->cancelResetTokens();
             $this->clearStatus(UserAccountStatus::REQUIRE_PASSWD_RESET);
+            // Clean sessions
+            Signal::send('auth.clean', $this->getUser(), $thisclient);
         }
 
         return $this->save();

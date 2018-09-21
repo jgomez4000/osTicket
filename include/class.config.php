@@ -176,6 +176,20 @@ extends VerySimpleModel {
             $this->updated = SqlFunction::NOW();
         return parent::save($this->dirty || $refetch);
     }
+
+    // Clean password reset tokens that have expired
+    static function cleanPwResets() {
+        global $cfg;
+
+        if (!$cfg || !($period = $cfg->getPwResetWindow())) // In seconds
+            return false;
+
+        return ConfigItem::objects()
+             ->filter(array(
+                'namespace' => 'pwreset',
+                'updated__lt' => SqlFunction::NOW()->minus(SqlInterval::SECOND($period)),
+            ))->delete();
+    }
 }
 
 class OsticketConfig extends Config {
@@ -417,6 +431,11 @@ class OsticketConfig extends Config {
 
     function isAvatarsEnabled() {
         return $this->get('enable_avatars');
+    }
+
+    function isTicketLockEnabled() {
+        return (($this->getTicketLockMode() != Lock::MODE_DISABLED)
+                && $this->getLockTime());
     }
 
     function getClientTimeout() {
@@ -1109,6 +1128,8 @@ class OsticketConfig extends Config {
         $f['daydatetime_format']=array('type'=>'string',   'required'=>1, 'error'=>__('Day, Datetime format is required'));
         $f['default_timezone']=array('type'=>'string',   'required'=>1, 'error'=>__('Default Timezone is required'));
         $f['system_language']=array('type'=>'string',   'required'=>1, 'error'=>__('A primary system language is required'));
+
+        $vars = Format::htmlchars($vars, true);
 
         // Make sure the selected backend is valid
         $storagebk = null;
