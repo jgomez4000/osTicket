@@ -27,73 +27,78 @@ if ($thisclient && $thisclient->isGuest()
 
 <?php } ?>
 
-<table width="800" cellpadding="1" cellspacing="0" border="0" id="ticketInfo">
-    <tr>
-        <td colspan="2" width="100%">
-            <h1>
-                <a href="tickets.php?id=<?php echo $ticket->getId(); ?>" title="<?php echo __('Reload'); ?>"><i class="refresh icon-refresh"></i></a>
-                <b>
-                <?php $subject_field = TicketForm::getInstance()->getField('subject');
-                    echo $subject_field->display($ticket->getSubject()); ?>
-                </b>
-                <small>#<?php echo $ticket->getNumber(); ?></small>
-<div class="pull-right">
-    <a class="action-button" href="tickets.php?a=print&id=<?php
-        echo $ticket->getId(); ?>"><i class="icon-print"></i> <?php echo __('Print'); ?></a>
+<h1 style="margin:10px 0">
+     <?php $subject_field = TicketForm::getInstance()->getField('subject');
+                   echo $subject_field->display($ticket->getSubject()); ?>
+    <span class="ticket-view-top pull-right">
+    <a href="tickets.php?id=<?php echo $ticket->getId(); ?>" data-original-title="<?php echo __('Reload'); ?>" data-toggle="tooltip" type="button" class="btn btn-sm btn-info" title="<?php echo __('Reload'); ?>"><i class="fas fa-sync-alt"></i></a>    
+    <a data-original-title="<?php echo __('Print'); ?>" data-toggle="tooltip" type="button" class="btn btn-sm btn-success" href="tickets.php?a=print&id=<?php
+        echo $ticket->getId(); ?>"><i class="fas fa-print"></i></a>
 <?php if ($ticket->hasClientEditableFields()
         // Only ticket owners can edit the ticket details (and other forms)
         && $thisclient->getId() == $ticket->getUserId()) { ?>
-                <a class="action-button" href="tickets.php?a=edit&id=<?php
-                     echo $ticket->getId(); ?>"><i class="icon-edit"></i> <?php echo __('Edit'); ?></a>
+                <a data-original-title="<?php echo __('Edit'); ?>" data-toggle="tooltip" type="button" class="btn btn-sm btn-warning" href="tickets.php?a=edit&id=<?php
+                     echo $ticket->getId(); ?>"><i class="fas fa-edit"></i></a>
 <?php } ?>
+    <a href="#" data-original-title="<?php echo __('Reload'); ?>" data-toggle="tooltip" type="button" class="btn btn-sm btn-primary" title="<?php echo __('Ticket Number'); ?>"><i class="ticket-number">#<?php echo $ticket->getNumber(); ?></i></a> 
+    </span>
+</h1>
+<div class="row ticket-view">
+<div class="col-md-6 col-lg-6"> 
+       <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title"> <?php echo __('Basic Ticket Information'); ?></h3>
+            </div>
+           <div class="panel-body">
+                <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                          <td><b><?php echo __('Ticket Status');?>:</b></td>
+                        <td><?php echo ($S = $ticket->getStatus()) ? $S->getLocalName() : ''; ?></td>
+                      </tr>
+                      <tr>
+                          <td><b><?php echo __('Department');?>:</b></td>
+                        <td><?php echo Format::htmlchars($dept instanceof Dept ? $dept->getName() : ''); ?></td>
+                      </tr>
+                      <tr>
+                        <td><b><?php echo __('Create Date');?>:</b></td>
+                        <td><?php echo Format::datetime($ticket->getCreateDate()); ?></td>
+                      </tr>
+                    </tbody>
+                  </table>
+               
+           </div>
+        </div>
+
 </div>
-            </h1>
-        </td>
-    </tr>
-    <tr>
-        <td width="50%">
-            <table class="infoTable" cellspacing="1" cellpadding="3" width="100%" border="0">
-                <thead>
-                    <tr><td class="headline" colspan="2">
-                        <?php echo __('Basic Ticket Information'); ?>
-                    </td></tr>
-                </thead>
-                <tr>
-                    <th width="100"><?php echo __('Ticket Status');?>:</th>
-                    <td><?php echo ($S = $ticket->getStatus()) ? $S->getLocalName() : ''; ?></td>
-                </tr>
-                <tr>
-                    <th><?php echo __('Department');?>:</th>
-                    <td><?php echo Format::htmlchars($dept instanceof Dept ? $dept->getName() : ''); ?></td>
-                </tr>
-                <tr>
-                    <th><?php echo __('Create Date');?>:</th>
-                    <td><?php echo Format::datetime($ticket->getCreateDate()); ?></td>
-                </tr>
-           </table>
-       </td>
-       <td width="50%">
-           <table class="infoTable" cellspacing="1" cellpadding="3" width="100%" border="0">
-                <thead>
-                    <tr><td class="headline" colspan="2">
-                        <?php echo __('User Information'); ?>
-                    </td></tr>
-                </thead>
-               <tr>
-                   <th width="100"><?php echo __('Name');?>:</th>
-                   <td><?php echo mb_convert_case(Format::htmlchars($ticket->getName()), MB_CASE_TITLE); ?></td>
-               </tr>
-               <tr>
-                   <th width="100"><?php echo __('Email');?>:</th>
-                   <td><?php echo Format::htmlchars($ticket->getEmail()); ?></td>
-               </tr>
-               <tr>
-                   <th><?php echo __('Phone');?>:</th>
-                   <td><?php echo $ticket->getPhoneNumber(); ?></td>
-               </tr>
-            </table>
-       </td>
-    </tr>
+<div class="col-md-6 col-lg-6"> 
+       <div class="panel panel-success">
+            <div class="panel-heading">
+              <h3 class="panel-title"><?php echo __('User Information'); ?></h3>
+            </div>
+           <div class="panel-body">
+                                      <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                          <td><b><?php echo __('Name');?>:</b></td>
+                        <td><?php echo mb_convert_case(Format::htmlchars($ticket->getName()), MB_CASE_TITLE); ?></td>
+                      </tr>
+                      <tr>
+                          <td><b><?php echo __('Email');?>:</b></td>
+                        <td><?php echo Format::htmlchars($ticket->getEmail()); ?></td>
+                      </tr>
+                      <tr>
+                        <td><b><?php echo __('Phone');?>:</b></td>
+                        <td><?php echo $ticket->getPhoneNumber(); ?></td>
+                      </tr>
+                    </tbody>
+                  </table> 
+        </div>
+
+</div>
+    </div>
+
+<table width="800" cellpadding="1" cellspacing="0" border="0" id="ticketInfo">
     <tr>
         <td colspan="2">
 <!-- Custom Data -->
@@ -133,15 +138,18 @@ echo $v;
     </td>
 </tr>
 </table>
-<br>
-
+<div class="col-md-12">
+<div>
+    <div class="timeline">
+        <div class="line text-muted"></div>
 <?php
     $ticket->getThread()->render(array('M', 'R'), array(
                 'mode' => Thread::MODE_CLIENT,
                 'html-id' => 'ticketThread')
             );
 ?>
-
+</div>
+    </div>
 <div class="clear" style="padding-bottom:10px;"></div>
 <?php if($errors['err']) { ?>
     <div id="msg_error"><?php echo $errors['err']; ?></div>
@@ -155,7 +163,7 @@ if (!$ticket->isClosed() || $ticket->isReopenable()) { ?>
 <form id="reply" action="tickets.php?id=<?php echo $ticket->getId();
 ?>#reply" name="reply" method="post" enctype="multipart/form-data">
     <?php csrf_token(); ?>
-    <h2><?php echo __('Post a Reply');?></h2>
+    <h3><?php echo __('Post a Reply');?></h3>
     <input type="hidden" name="id" value="<?php echo $ticket->getId(); ?>">
     <input type="hidden" name="a" value="reply">
     <div>
@@ -179,11 +187,12 @@ echo $attrs; ?>><?php echo $draft ?: $info['message'];
         <?php echo __('Ticket will be reopened on message post'); ?>
     </div>
 <?php } ?>
-    <p style="text-align:center">
-        <input type="submit" value="<?php echo __('Post Reply');?>">
-        <input type="reset" value="<?php echo __('Reset');?>">
-        <input type="button" value="<?php echo __('Cancel');?>" onClick="history.go(-1)">
+    <p style="text-align:center"><br>
+        <input class="btn btn-success" type="submit" value="<?php echo __('Post Reply');?>">
+        <input class="btn btn-warning" type="reset" value="<?php echo __('Reset');?>">
+        <input class="btn btn-danger" type="button" value="<?php echo __('Cancel');?>" onClick="history.go(-1)">
     </p>
+    <br><br><br>
 </form>
 <?php
 } ?>
@@ -202,3 +211,5 @@ foreach (AttachmentFile::objects()->filter(array(
 } ?>
 showImagesInline(<?php echo JsonDataEncoder::encode($urls); ?>);
 </script>
+</div>
+</div>

@@ -15,14 +15,18 @@ class DynamicFormsAjaxAPI extends AjaxController {
     }
 
     static function dynamic_select_for_help_topic($the_array, $element_name, $label = '', $init_value = '') {
-        $menu = '<tr><td>';
         if ($label != '') {
-            $menu .= '
-            <label for="'.$element_name.'">'.$label.'</label>';
+            $menu = '
+            <label class="control-label col-sm-2" for="'.$element_name.'">'.$label.'</label>';
+        } else {
+            $menu = '
+            <label class="control-label col-sm-2" for="'.$element_name.'"></label>';
         }
+
+        $menu .= '<div class="col-sm-10">';
         
         $menu .= '
-            <select name="'.$element_name.'" id="'.$element_name.'" onchange="javascript:
+            <select class="form-control" name="'.$element_name.'" id="'.$element_name.'" onchange="javascript:
                     
                     var data = $(\':input[name]\', \'#dynamic-form\').serialize();
                     $.ajax(
@@ -58,8 +62,8 @@ class DynamicFormsAjaxAPI extends AjaxController {
         $menu .= '
             </select>';
         
-        $menu .= '<font class="error">*&nbsp;</font>';
-        $menu .= '</td></tr>';
+        $menu .= '<font class="error"></font>';
+        $menu .= '</div>';
         return $menu;
     }
     

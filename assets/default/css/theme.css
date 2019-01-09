@@ -122,9 +122,10 @@ a:hover, .link:hover {
     cursor: pointer;
 }
 h1 {
-  color: #00AEEF;
+  /*color: #00AEEF;
   font-weight: normal;
-  font-size: 20px;
+  font-size: 20px;*/
+  background-color: #f5f5f5;
 }
 h3 {
   font-size: 16px;

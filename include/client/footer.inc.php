@@ -1,9 +1,13 @@
         </div>
-    </div>
+    <footer class="footer">
     <div id="footer">
-        <p>Copyright &copy; <?php echo date('Y'); ?> <?php echo (string) $ost->company ?: 'osTicket.com'; ?> - All rights reserved.</p>
-        <a id="poweredBy" href="http://osticket.com" target="_blank"><?php echo __('Helpdesk software - powered by osTicket'); ?></a>
+        <div class="container">
+            <div class="navbar-right copy-right">
+                Copyright &copy; <?php echo date('Y'); ?> <?php echo (string) $ost->company ?: 'osTicket.com'; ?> - All rights reserved.
+            </div>
+        </div>
     </div>
+</footer>
 <div id="overlay"></div>
 <div id="loading">
     <h4><?php echo __('Please Wait!');?></h4>

@@ -17,26 +17,28 @@ if ($cfg->isClientEmailVerificationRequired())
 else
     echo ' '.__('This will sign you in to view your ticket.');
 ?></p>
-<form action="login.php" method="post" id="clientLogin">
+<div class="login-page row">    
+    <div id="loginbox" class="col-md-6">                    
+                   <div class="well">
+<form action="login.php" method="post" id="clientLogin" class="form-horizontal">
     <?php csrf_token(); ?>
-<div style="display:table-row">
-    <div class="login-box">
     <div><strong><?php echo Format::htmlchars($errors['login']); ?></strong></div>
-    <div>
-        <label for="email"><?php echo __('Email Address'); ?>:
-        <input id="email" placeholder="<?php echo __('e.g. john.doe@osticket.com'); ?>" type="text"
-            name="lemail" size="30" value="<?php echo $email; ?>" class="nowarn"></label>
+    <div style="margin-bottom: 25px" class="input-group">
+        <span class="input-group-addon btn-primary"><i class="fas fa-envelope"></i></span>
+        <input id="email" placeholder="<?php echo __('Email Address'); ?>" type="text"
+            name="lemail" size="30" value="<?php echo $email; ?>" class="nowarn form-control"></label>
     </div>
-    <div>
-        <label for="ticketno"><?php echo __('Ticket Number'); ?>:
-        <input id="ticketno" type="text" name="lticket" placeholder="<?php echo __('e.g. 051243'); ?>"
-            size="30" value="<?php echo $ticketid; ?>" class="nowarn"></label>
+    <div style="margin-bottom: 25px" class="input-group">
+                        <span class="input-group-addon btn-primary"><i class="fas fa-ticket-alt"></i></span>
+        <input id="ticketno" type="text" name="lticket" placeholder="<?php echo __('Ticket Number'); ?>"
+            size="30" value="<?php echo $ticketid; ?>" class="nowarn form-control">
     </div>
-    <p>
-        <input class="btn" type="submit" value="<?php echo $button; ?>">
-    </p>
-    </div>
-    <div class="instructions">
+    <input class="btn btn-lg btn-primary btn-block" type="submit" value="<?php echo $button; ?>">
+    </form>
+    </div></div>
+    <div class="col-md-6">
+       <div class="well">
+      <ul class="list-unstyled" style="line-height: 2"><li><span class="fa fa-check text-success"></span>
 <?php if ($cfg && $cfg->getClientRegistrationMode() !== 'disabled') { ?>
         <?php echo __('Have an account with us?'); ?>
         <a href="login.php"><?php echo __('Sign In'); ?></a> <?php
@@ -44,17 +46,17 @@ else
 <?php echo sprintf(__('or %s register for an account %s to access all your tickets.'),
     '<a href="account.php?do=create">','</a>');
     }
-}?>
-    </div>
-</div>
-</form>
-<br>
-<p>
+    }?></li>
+
+ <li><span class="fa fa-check text-success"></span>
 <?php
 if ($cfg->getClientRegistrationMode() != 'disabled'
     || !$cfg->isClientLoginRequired()) {
     echo sprintf(
     __("If this is your first time contacting us or you've lost the ticket number, please %s open a new ticket %s"),
         '<a href="open.php">','</a>');
-} ?>
-</p>
+} ?></li>
+      </ul>
+       </div>
+  </div>
+</div>

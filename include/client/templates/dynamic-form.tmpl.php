@@ -3,12 +3,12 @@
     // space below.
     // XXX: Would be nice to handle the decoration with a CSS class
     ?>
-    <tr><td colspan="2"><hr />
+
     <div class="form-header" style="margin-bottom:0.5em">
     <h3><?php echo Format::htmlchars($form->getTitle()); ?></h3>
     <div><?php echo Format::display($form->getInstructions()); ?></div>
+    <hr>
     </div>
-    </td></tr>
     <?php
     // Form fields, each with corresponding errors follows. Fields marked
     // 'private' are not included in the output for clients
@@ -22,10 +22,11 @@
             continue;
         }
         ?>
-        <tr>
-            <td colspan="2" style="padding-top:10px;">
+  <div class="form-group">
+
+
             <?php if (!$field->isBlockLevel()) { ?>
-                <label for="<?php echo $field->getFormName(); ?>"><span class="<?php
+                <label class="control-label col-sm-2"  for="<?php echo $field->getFormName(); ?>"><span class="<?php
                     if ($field->isRequiredForUsers()) echo 'required'; ?>">
                 <?php echo Format::htmlchars($field->getLocal('label')); ?>
             <?php if ($field->isRequiredForUsers()) { ?>
@@ -37,18 +38,20 @@
                         echo Format::viewableImages($field->getLocal('hint')); ?></em>
                 <?php
                 } ?>
-            <br/>
+            <br/></label>
             <?php
-            }
-            $field->render(array('client'=>true));
-            ?></label><?php
+            } else { ?>
+      <label class="control-label col-sm-2"></label>
+            <?php } ?>
+      <div class="col-sm-10">
+      <?php      $field->render(array('client'=>true));
+            ?><?php
             foreach ($field->errors() as $e) { ?>
                 <div class="error"><?php echo $e; ?></div>
             <?php }
             $field->renderExtras(array('client'=>true));
-            ?>
-            </td>
-        </tr>
+            ?> </div>
+  </div>
         <?php
     }
 ?>
