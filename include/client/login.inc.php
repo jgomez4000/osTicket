@@ -20,17 +20,17 @@ if ($content) {
 <div class="login-page row login-only">    
     <div id="loginbox" class="col-md-6">                    
                    <div class="well">
-                <form action="login.php" method="post" id="clientLogin" class="form-horizontal">
+                <form action="login.php" method="post" id="clientLogin" class="form-horizontal" autocomplete="on">
                     <?php csrf_token(); ?>
 
                     <strong><?php echo Format::htmlchars($errors['login']); ?></strong>
                     <div style="margin-bottom: 25px" class="input-group">
                         <span class="input-group-addon btn-primary"><i class="fas fa-user"></i></span>
-                        <input id="username" placeholder="<?php echo __('Email or Username'); ?>" type="text" name="luser" size="30" value="<?php echo $email; ?>" class="form-control">
+                        <input id="username" placeholder="<?php echo __('Email or Username'); ?>" type="text" name="luser" size="30" value="<?php echo $email; ?>" class="form-control nowarn">
                     </div>
                     <div style="margin-bottom: 25px" class="input-group">
                         <span class="input-group-addon"><i class="fas fa-lock"></i></span>
-                        <input id="passwd" placeholder="<?php echo __('Password'); ?>" type="password" name="lpasswd" size="30" value="<?php echo $passwd; ?>" class="form-control">
+                        <input id="passwd" placeholder="<?php echo __('Password'); ?>" type="password" name="lpasswd" size="30" value="<?php echo $passwd; ?>" class="form-control nowarn">
                     </div>
                     
                         <input class="btn btn-lg btn-primary btn-block" type="submit" value="<?php echo __('Sign In'); ?>">
@@ -69,6 +69,8 @@ if ($content) {
                             if ($cfg && $cfg->isClientRegistrationEnabled()) {
                                 if (count($ext_bks)) ?>
                                     <li><span class="fa fa-check text-success"></span> <?php echo __('Not yet registered?'); ?> <a href="account.php?do=create"><?php echo __('Create an account'); ?></a></li>
+                            <?php } else { ?>
+                                <li><span class="fa fa-check text-success"></span>Not yet registered? Send an email to <a href="mailto:soporte@brokerware.com.uy?subject=REQUEST%20-%20New%20support%20user&body=Name:%20%0AEmail:%20%0APhone:%20">soporte@brokerware.com.uy</a> with the subject "REQUEST - New support user" stating your name, email and phone</li>
                             <?php } ?>
                           <li><span class="fa fa-check text-success"></span>    <?php
     if ($cfg->getClientRegistrationMode() != 'disabled' || !$cfg->isClientLoginRequired()) {
