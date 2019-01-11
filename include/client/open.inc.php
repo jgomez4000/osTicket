@@ -37,9 +37,9 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
 }
 
 ?>
-<div class="row">
+<div class="row" style="font-family: Lato;">
 <div class="col-md-12">
-<h1><?php echo __('Open a New Ticket');?></h1>
+<h1 style="color: #4E6975; font-size: 21px; padding: 10px 0px 10px 10px;"><?php echo __('Open a New Ticket');?></h1>
 <p><?php echo __('Please fill in the form below to open a new ticket.');?></p>
 <form id="ticketForm" method="post" action="open.php" enctype="multipart/form-data" class="form-horizontal">
   <?php csrf_token(); ?>

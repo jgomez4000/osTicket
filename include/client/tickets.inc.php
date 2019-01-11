@@ -133,7 +133,7 @@ $tickets->values(
 );
 
 ?>
-<h1 style="margin:10px 0">
+<h1 style="color: #4E6975; font-size: 21px; padding: 10px 0px 10px 10px; margin:10px 0;">
      <?php echo __('Tickets'); ?>
     <a href="<?php echo Format::htmlchars($_SERVER['REQUEST_URI']); ?>"
         ><i class="refersh-icon pull-right fas fa-sync-alt"></i> 

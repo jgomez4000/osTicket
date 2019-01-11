@@ -3,18 +3,18 @@ html {
     position: relative;
 }
 .welcome-user {
-    padding-top: 10px;
+    padding-top: 8px;
     display: block;
     color: #ffffff !important;
-    font-size: 14px;
+    font-size: 17px;
 }
 #logo img {
     width: 300px;
     margin-top: -5px;
 }
 .navbar-inverse {
-    background-color: #0473aa;
-border-color: #0473aa;
+    background-color: #879EAA;
+border-color: #879EAA;
 }
 .navbar {
     margin-bottom: 20px;
@@ -25,7 +25,7 @@ border-color: #0473aa;
     padding-top: 10px;
     padding-bottom: 10px;
     color: #ffffff !important;
-    font-size: 14px;
+    font-size: 17px;
 }
 .search input {
     width:80%;
@@ -85,7 +85,7 @@ color: #ffffff;
 }
 .box-body {
     text-align: center;
-padding-left: 55px;
+/*padding-left: 55px;*/
 }
 .box-body h1 {
     font-size: 25px;
@@ -109,7 +109,9 @@ padding: 0px 20px;
 .support-image {
     position: relative;
     text-align: center;
-   
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
 }
 
 /* Centered text */
@@ -124,10 +126,16 @@ padding: 0px 20px;
 .support-image h1 {
     display: none;
 }
+.support-image p {
+    font-family: Lato;
+    font-weight: light;
+    line-height: 2.3;
+    padding-top: 15px;
+}
 
 .support-image h2 {
-    color: #ffffff;
-    font-size: 35px;
+    color: #333;
+    font-size: 21px;
     font-weight: bold;
 }
 .front-boxes {
@@ -137,7 +145,6 @@ padding: 0px 20px;
     margin-top: -5px;
     color: #76c0e5;
     font-weight: bold;
-    
 }
 .footer {
     bottom: 0;
@@ -145,19 +152,21 @@ padding: 0px 20px;
     width: 100%;
 }
 #footer {
-    background: #0473aa;
+    background: #879EAA;
     height: 32px;
 }
 
 .copy-right {
-    font-size: 11px;
-    padding-top: 8px;
+    font-size: 15px;
+    padding-top: 5px;
+    color: white;
 }
 h1 {
     background-color: #f5f5f5;
     padding: 5px 0px 5px 10px;
     font-size: 28px;
     color: #0473aa;
+    font-family: Lato;
 }
 .login-page {
     margin-top: 20px;
@@ -167,7 +176,7 @@ h1 {
     height: 45px;
 }  
 .input-group-addon {
-  background: #0473aa;  
+  background: #4E6975;
 }
 .input-group-addon {
     color: #ffffff;
@@ -513,6 +522,18 @@ margin-left: 2px;
 }
 #ticketTable thead tr td a {
     color: #ffffff;
+}
+
+@media (max-width: 1111px) {
+    .support-image {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 500px) {
+    .support-image img {
+        display: none;
+    }
 }
 
 @media (max-width: 767px) {

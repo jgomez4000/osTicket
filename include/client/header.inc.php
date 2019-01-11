@@ -39,6 +39,7 @@ if ($lang) {
         rel="stylesheet" media="screen" />
     <link rel="stylesheet" href="<?php echo ROOT_PATH; ?>css/thread.css?035fd0a" media="screen">
     <link rel="stylesheet" href="<?php echo ROOT_PATH; ?>css/redactor.css?035fd0a" media="screen">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
     <link type="text/css" rel="stylesheet" href="<?php echo ASSETS_PATH; ?>fontawesome/css/fontawesome-all.min.css?035fd0a"/>
     <link type="text/css" rel="stylesheet" href="<?php echo ROOT_PATH; ?>css/flags.css?035fd0a">
     <link type="text/css" rel="stylesheet" href="<?php echo ROOT_PATH; ?>css/rtl.css?035fd0a"/>
@@ -99,11 +100,11 @@ if ($lang) {
                     && !$thisclient->isGuest()) { ?>
         <label class="welcome-user">Welcome <?php echo Format::htmlchars($thisclient->getName()); ?> </label>
                     <?php } else {?>
-         <label class="welcome-user">Welcome <?php echo __('Guest'); ?> </label>
+         <!--<label class="welcome-user">Welcome <?php echo __('Guest'); ?> </label>-->
                     <?php }?>
         </div>
         <div class="navbar-collapse collapse" id="navbar" aria-expanded="false" style="height: 1px;">
-            <ul class="nav navbar-nav navbar-right head-menu">
+            <ul class="nav navbar-nav navbar-right head-menu" style="font-family: Lato;">
                 <?php
 if (($all_langs = Internationalization::getConfiguredSystemLanguages())
     && (count($all_langs) > 1)
