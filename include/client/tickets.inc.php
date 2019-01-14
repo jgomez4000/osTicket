@@ -174,7 +174,7 @@ foreach (Topic::getHelpTopics(true) as $id=>$name) {
            <ul class="nav nav-pills" role="tablist">
 <?php if ($openTickets) { ?>
      <li role="presentation" class="<?php if ($status == 'open') echo 'active'; ?>"> 
-         <a href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>">
+         <a href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>" style="background-color: #547B97;">
     <?php echo _P('ticket-status', 'Open'); if ($openTickets > 0) echo '<span class="badge">'.sprintf(' %d', $openTickets).'</span>'; ?>
          </a></li>
     <?php if ($closedTickets) { ?>
