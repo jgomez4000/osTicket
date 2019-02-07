@@ -7,7 +7,7 @@ if ($agent->hasPerm(Task::PERM_CLOSE, false)) {
 
     if (isset($options['status'])) {
         $status = $options['status'];
-    
+
         if (strpos($status, 'closed') !== false) {
             $actions += array(
                     'reopen' => array(
@@ -15,8 +15,6 @@ if ($agent->hasPerm(Task::PERM_CLOSE, false)) {
                         'action' => __('Reopen')
                     ));
         }
-
-        
         if (strpos($status, 'open') !== false) {
             $actions += array(
                     'close' => array(
