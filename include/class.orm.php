@@ -1505,7 +1505,7 @@ implements IteratorAggregate, Countable, ArrayAccess {
         throw new Exception(__('QuerySet is read-only'));
     }
 
-    function count() {
+    function count($mode=COUNT_NORMAL) {
         $this->asArray();
         return count($this->cache);
     }
