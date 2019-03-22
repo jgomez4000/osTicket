@@ -3849,7 +3849,7 @@ class TextboxWidget extends Widget {
         $placeholder = sprintf('placeholder="%s"', $this->field->getLocal('placeholder',
             $config['placeholder']));
         ?>
-        <input type="<?php echo $type; ?>"
+        <input class="form-control" type="<?php echo $type; ?>"
             id="<?php echo $this->id; ?>"
             <?php echo implode(' ', array_filter(array(
                 $size, $maxlength, $classes, $autocomplete, $disabled,
@@ -3954,14 +3954,15 @@ class PhoneNumberWidget extends Widget {
         $config = $this->field->getConfiguration();
         list($phone, $ext) = explode("X", $this->value);
         ?>
-        <input id="<?php echo $this->id; ?>" type="tel" name="<?php echo $this->name; ?>" value="<?php
+        <div class="form-inline">
+        <input class="form-control" id="<?php echo $this->id; ?>" type="tel" name="<?php echo $this->name; ?>" value="<?php
         echo Format::htmlchars($phone); ?>"/><?php
         // Allow display of extension field even if disabled if the phone
         // number being edited has an extension
         if ($ext || $config['ext']) { ?> <?php echo __('Ext'); ?>:
-            <input type="text" name="<?php
+            <input class="form-control" type="text" name="<?php
             echo $this->name; ?>-ext" value="<?php echo Format::htmlchars($ext);
-                ?>" size="5"/>
+                ?>" size="5"/></div>
         <?php }
     }
 

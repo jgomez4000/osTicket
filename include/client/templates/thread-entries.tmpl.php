@@ -43,7 +43,10 @@ if (count($entries)) {
             }
             ?><div id="thread-entry-<?php echo $entry->getId(); ?>"><?php
             include 'thread-entry.tmpl.php';
-            ?></div><?php
+            ?><?php
+            if($i != 0) {
+              print "</article></div>";
+            }
         }
         $i++;
     }

@@ -67,12 +67,12 @@ if ($settings['status'])
         $status = 'open';
     case 'open':
     case 'closed':
-		$results_type = ($status == 'closed') ? __('Closed Tickets') : __('Open Tickets');
+        $results_type = ($status == 'closed') ? __('Closed Tickets') : __('Open Tickets');
         $basic_filter->filter(array('status__state' => $status));
         break;
 }
 
-// Add visibility constraints — use a union query to use multiple indexes,
+// Add visibility constraints ‚Äî use a union query to use multiple indexes,
 // use UNION without "ALL" (false as second parameter to union()) to imply
 // unique values
 $visibility = $basic_filter->copy()
@@ -121,7 +121,7 @@ $pageNav->paginate($tickets);
 $showing =$total ? $pageNav->showing() : "";
 if(!$results_type)
 {
-	$results_type=ucfirst($status).' '.__('Tickets');
+    $results_type=ucfirst($status).' '.__('Tickets');
 }
 $showing.=($status)?(' '.$results_type):' '.__('All Tickets');
 if($search)
@@ -137,15 +137,29 @@ $tickets->values(
 );
 
 ?>
-<div class="search well">
-<div class="flush-left">
+<h1 style="margin:10px 0">
+     <?php echo __('Tickets'); ?>
+    <a href="<?php echo Format::htmlchars($_SERVER['REQUEST_URI']); ?>"
+        ><i class="refersh-icon pull-right fas fa-sync-alt"></i> 
+    </a>
+</h1>
+<div class="search-tickets">
+    <div class="well">
+<div class="row">
 <form action="tickets.php" method="get" id="ticketSearchForm">
+    <div class="col-md-4 search-container">
     <input type="hidden" name="a"  value="search">
     <input type="text" name="keywords" size="30" value="<?php echo Format::htmlchars($settings['keywords']); ?>">
-    <input type="submit" value="<?php echo __('Search');?>">
-<div class="pull-right">
-    <?php echo __('Help Topic'); ?>:
-    <select name="topic_id" class="nowarn" onchange="javascript: this.form.submit(); ">
+    <button type="submit" value="<?php echo __('Search');?>"><i class="fa fa-search"></i></button>
+    
+    <?php if ($settings['keywords'] || $settings['topic_id'] || $_REQUEST['sort']) { ?>
+<div style="margin-top:10px"><strong><a href="?clear" style="color:#777"><i class="fas fa-eraser"></i> <?php echo __('Clear all filters and sort'); ?></a></strong></div>
+<?php } ?>
+    </div>
+<div class="col-md-4">
+
+  <!--  <?php //echo __('Help Topic'); ?>: -->
+   <select name="topic_id" class="nowarn form-control topics" onchange="javascript: this.form.submit(); ">
         <option value="">&mdash; <?php echo __('All Help Topics');?> &mdash;</option>
 <?php
 foreach (Topic::getHelpTopics(true) as $id=>$name) {
@@ -158,32 +172,15 @@ foreach (Topic::getHelpTopics(true) as $id=>$name) {
             ><?php echo sprintf('%s (%d)', Format::htmlchars($name),
                 $thisclient->getNumTopicTickets($id)); ?></option>
 <?php } ?>
-    </select>
-</div>
-</form>
-</div>
-
-<?php if ($settings['keywords'] || $settings['topic_id'] || $_REQUEST['sort']) { ?>
-<div style="margin-top:10px"><strong><a href="?clear" style="color:#777"><i class="icon-remove-circle"></i> <?php echo __('Clear all filters and sort'); ?></a></strong></div>
-<?php } ?>
-
-</div>
-
-
-<h1 style="margin:10px 0">
-    <a href="<?php echo Format::htmlchars($_SERVER['REQUEST_URI']); ?>"
-        ><i class="refresh icon-refresh"></i>
-    <?php echo __('Tickets'); ?>
-    </a>
-
-<div class="pull-right states">
-    <small>
+    </select></div>
+    <div class="col-md-4">
+       <div class="pull-right states">
+           <ul class="nav nav-pills" role="tablist">
 <?php if ($openTickets) { ?>
-    <i class="icon-file-alt"></i>
-    <a class="state <?php if ($status == 'open') echo 'active'; ?>"
-        href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>">
-    <?php echo _P('ticket-status', 'Open'); if ($openTickets > 0) echo sprintf(' (%d)', $openTickets); ?>
-    </a>
+     <li role="presentation" class="<?php if ($status == 'open') echo 'active'; ?>"> 
+         <a href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>">
+    <?php echo _P('ticket-status', 'Open'); if ($openTickets > 0) echo '<span class="badge">'.sprintf(' %d', $openTickets).'</span>'; ?>
+         </a></li>
     <?php if ($closedTickets) { ?>
     &nbsp;
     <span style="color:lightgray">|</span>
@@ -197,10 +194,17 @@ if ($closedTickets) {?>
     <?php echo __('Closed'); if ($closedTickets > 0) echo sprintf(' (%d)', $closedTickets); ?>
     </a>
 <?php } ?>
-    </small>
+    </ul>
+</div> 
+        
+    </div>
+</form>
 </div>
-</h1>
-<table id="ticketTable" width="800" border="0" cellspacing="0" cellpadding="0">
+
+</div>
+
+<div class="table-responsive">
+<table id="ticketTable" class="table table-bordered table-striped table-condensed table-inbox table-hover" width="800" border="0" cellspacing="0" cellpadding="0">
     <caption><?php echo $showing; ?></caption>
     <thead>
         <tr>
@@ -252,7 +256,7 @@ if ($closedTickets) {?>
                 <td><?php echo Format::date($T['created']); ?></td>
                 <td><?php echo $status; ?></td>
                 <td>
-                  <?php if ($isCollab) {?>
+                    <?php if ($isCollab) {?>
                     <div style="max-height: 1.2em; max-width: 320px;" class="link truncate" href="tickets.php?id=<?php echo $T['ticket_id']; ?>"><i class="icon-group"></i> <?php echo $subject; ?></div>
                   <?php } else {?>
                     <div style="max-height: 1.2em; max-width: 320px;" class="link truncate" href="tickets.php?id=<?php echo $T['ticket_id']; ?>"><?php echo $subject; ?></div>
@@ -269,8 +273,11 @@ if ($closedTickets) {?>
     ?>
     </tbody>
 </table>
+    </div>
 <?php
 if ($total) {
-    echo '<div>&nbsp;'.__('Page').':'.$pageNav->getPageLinks().'&nbsp;</div>';
+    echo '<div class="text-right"><ul class="pagination"><li>'.$pageNav->getPageLinks().'</li></ul></div>';
 }
 ?>
+
+</div>

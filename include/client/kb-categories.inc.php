@@ -1,5 +1,7 @@
 <div class="row">
-<div class="span8">
+    <div class="col-md-12">
+    <h1><?php echo __('Knowledgebase'); ?></h1>
+
 <?php
     $categories = Category::objects()
         ->exclude(Q::any(array(
@@ -10,7 +12,7 @@
                     'children__faqs__ispublished'=>FAQ::VISIBILITY_PRIVATE,
                     ))
         )))
-        //->annotate(array('faq_count'=>SqlAggregate::COUNT('faqs__ispublished')));
+                //->annotate(array('faq_count'=>SqlAggregate::COUNT('faqs__ispublished')));
         ->annotate(array('faq_count' => SqlAggregate::COUNT(
                         SqlCase::N()
                         ->when(array(
@@ -23,13 +25,12 @@
                                 'children__faqs__ispublished__gt'=> FAQ::VISIBILITY_PRIVATE), 1)
                         ->otherwise(null)
         )));
-
-       // ->filter(array('faq_count__gt' => 0));
     if ($categories->exists(true)) { ?>
-        <div><?php echo __('Click on the category to browse FAQs.'); ?></div>
-        <ul id="kb">
+    <p><?php echo __('Click on the category to browse FAQs.'); ?></p></div>
+        <div class="col-md-9">
+        <ul id="kb" class="list-group">
 <?php
-        foreach ($categories as $C) {
+          foreach ($categories as $C) {
             // Don't show subcategories with parents.
             if (($p=$C->parent)
                     && ($categories->findFirst(array(
@@ -38,15 +39,19 @@
 
             $count = $C->faq_count + $C->children_faq_count;
             ?>
-            <li><i></i>
-            <div style="margin-left:45px">
+            <li class="list-group-item">
+                <div class="row">
+                <div class="col-xs-3 col-md-2"><i class="fas fa-folder-open"></i></div>
+            <div class="col-xs-9 col-md-10">
             <h4><?php echo sprintf('<a href="faq.php?cid=%d">%s %s</a>',
                 $C->getId(), Format::htmlchars($C->getFullName()),
                 $count ? "({$count})": ''
                 ); ?></h4>
-            <div class="faded" style="margin:10px 0">
+            <div class="faded list-group-item-text" style="margin:10px 0">
                 <?php echo Format::safe_html($C->getLocalDescriptionWithImages()); ?>
             </div>
+                <div class="rectangle-list">
+                <ol>
 <?php
             if (($subs=$C->getPublicSubCategories())) {
                 echo '<p/><div style="padding-bottom:15px;">';
@@ -64,12 +69,12 @@
             foreach ($C->faqs
                     ->exclude(array('ispublished'=>FAQ::VISIBILITY_PRIVATE))
                     ->limit(5) as $F) { ?>
-                <div class="popular-faq"><i class="icon-file-alt"></i>
+                <li>
                 <a href="faq.php?id=<?php echo $F->getId(); ?>">
                 <?php echo $F->getLocalQuestion() ?: $F->getQuestion(); ?>
-                </a></div>
-<?php       } ?>
-            </div>
+                </a></li>
+<?php       } ?> </ol></div>
+            </div></div>
             </li>
 <?php   } ?>
        </ul>
@@ -78,15 +83,14 @@
         echo __('NO FAQs found');
     }
 ?>
-</div>
-<div class="span4">
+        </div><div class="col-md-3">
     <div class="sidebar">
     <div class="searchbar">
         <form method="get" action="faq.php">
         <input type="hidden" name="a" value="search"/>
-        <select name="topicId"  style="width:100%;max-width:100%"
+        <select class="form-control" name="topicId"
             onchange="javascript:this.form.submit();">
-            <option value="">—<?php echo __("Browse by Topic"); ?>—</option>
+            <option value="">‚Äî<?php echo __("Browse by Topic"); ?>‚Äî</option>
 <?php
 $topics = Topic::objects()
     ->annotate(array('has_faqs'=>SqlAggregate::COUNT('faqs')))
@@ -99,11 +103,6 @@ foreach ($topics as $T) { ?>
         </form>
     </div>
     <br/>
-    <div class="content">
-        <section>
-            <div class="header"><?php echo __('Other Resources'); ?></div>
-        </section>
-    </div>
     </div>
 </div>
 </div>

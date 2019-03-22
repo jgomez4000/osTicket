@@ -143,7 +143,7 @@ class PageNate {
             if ($hash)
                 $href .= '#'.$hash;
             if ($i == $this_page) {
-                $html .= "\n<b>[$i]</b>";
+                $html .= "<a href=\"#\" >$i</a>";
             }
             elseif ($pjax) {
                 $html .= " <a href=\"{$href}\" data-pjax-container=\"{$pjax}\"><b>$i</b></a>";

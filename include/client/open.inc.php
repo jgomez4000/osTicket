@@ -31,13 +31,14 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
 }
 
 ?>
+<div class="row">
+<div class="col-md-12">    
 <h1><?php echo __('Open a New Ticket');?></h1>
 <p><?php echo __('Please fill in the form below to open a new ticket.');?></p>
-<form id="ticketForm" method="post" action="open.php" enctype="multipart/form-data">
+<form id="ticketForm" method="post" action="open.php" enctype="multipart/form-data" class="form-horizontal">
   <?php csrf_token(); ?>
   <input type="hidden" name="a" value="open">
-  <table width="800" cellpadding="1" cellspacing="0" border="0">
-    <tbody>
+  <table>
 <?php
         if (!$thisclient) {
             $uform = UserForm::getUserForm()->getForm($_POST);
@@ -45,22 +46,19 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
             $uform->render(array('staff' => false, 'mode' => 'create'));
         }
         else { ?>
-            <tr><td colspan="2"><hr /></td></tr>
-        <tr><td><?php echo __('Email'); ?>:</td><td><?php
-            echo $thisclient->getEmail(); ?></td></tr>
-        <tr><td><?php echo __('Client'); ?>:</td><td><?php
-            echo Format::htmlchars($thisclient->getName()); ?></td></tr>
-        <?php } ?>
-    </tbody>
-    <tbody>
-    <tr><td colspan="2"><hr />
-        <div class="form-header" style="margin-bottom:0.5em">
-        <b><?php echo __('Help Topic'); ?></b>
-        </div>
-    </td></tr>
-    <tr>
-        <td colspan="2">
-            <select id="topicId" name="topicId" onchange="javascript:
+      <div class="form-group">
+          <div class="col-sm-1"><label for="email"><?php echo __('Email'); ?>:</label></div><div class="col-sm-11">   
+            <?php
+            echo $thisclient->getEmail(); ?> </div></div>
+        <div class="form-group">
+            <div class="col-sm-1"><label for="email"> <?php echo __('Client'); ?>:</label></div><div class="col-sm-11"> <?php
+            echo Format::htmlchars($thisclient->getName()); ?>
+        <?php } ?></div></div>
+<hr/>
+            <div class="form-group">
+                    <label class="control-label col-sm-2"> <?php echo __('Help Topic*&nbsp;'); ?></label>
+<div class="col-sm-10">
+            <select class="form-control" id="topicId" name="topicId" onchange="javascript:
                     var data = $(':input[name]', '#dynamic-form').serialize();
                     $.ajax(
                       'ajax.php/form/help-topic/' + this.value,
@@ -84,43 +82,42 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
                 <?php
                 } ?>
             </select>
-            <font class="error">*&nbsp;<?php echo $errors['topicId']; ?></font>
-        </td>
-    </tr>
-    </tbody>
-    <tbody id="dynamic-form">
+    <font class="error"><?php echo $errors['topicId']; ?></font></div></div>
+
+    <div id="dynamic-form">
         <?php
         $options = array('mode' => 'create');
         foreach ($forms as $form) {
             include(CLIENTINC_DIR . 'templates/dynamic-form.tmpl.php');
         } ?>
-    </tbody>
+    </div>
+<table>
     <tbody>
     <?php
     if($cfg && $cfg->isCaptchaEnabled() && (!$thisclient || !$thisclient->isValid())) {
         if($_POST && $errors && !$errors['captcha'])
             $errors['captcha']=__('Please re-enter the text again');
         ?>
-    <tr class="captchaRow">
-        <td class="required"><?php echo __('CAPTCHA Text');?>:</td>
-        <td>
+    <div class="captchaRow form-group">
+        <label class="col-sm-2 text-right"><?php echo __('CAPTCHA Text');?></label>
+        <div class="col-sm-10">
             <span class="captcha"><img src="captcha.php" border="0" align="left"></span>
             &nbsp;&nbsp;
             <input id="captcha" type="text" name="captcha" size="6" autocomplete="off">
             <em><?php echo __('Enter the text shown on the image.');?></em>
             <font class="error">*&nbsp;<?php echo $errors['captcha']; ?></font>
-        </td>
-    </tr>
+        </div>
+    </div>
     <?php
     } ?>
-    <tr><td colspan=2>&nbsp;</td></tr>
+
     </tbody>
   </table>
 <hr/>
   <p class="buttons" style="text-align:center;">
-        <input type="submit" value="<?php echo __('Create Ticket');?>">
-        <input type="reset" name="reset" value="<?php echo __('Reset');?>">
-        <input type="button" name="cancel" value="<?php echo __('Cancel'); ?>" onclick="javascript:
+        <input class="btn btn-success" type="submit" value="<?php echo __('Create Ticket');?>">
+        <input class="btn btn-warning" type="reset" name="reset" value="<?php echo __('Reset');?>">
+        <input class="btn btn-danger" type="button" name="cancel" value="<?php echo __('Cancel'); ?>" onclick="javascript:
             $('.richtext').each(function() {
                 var redactor = $(this).data('redactor');
                 if (redactor && redactor.opts.draftDelete)
@@ -128,4 +125,8 @@ if ($info['topicId'] && ($topic=Topic::lookup($info['topicId']))) {
             });
             window.location.href='index.php';">
   </p>
+
 </form>
+  <br><br>
+   </div>
+  </div>

@@ -12,19 +12,19 @@ if(!defined('OSTCLIENTINC') || !$thisclient || !$ticket || !$ticket->checkUserAc
     <?php echo csrf_token(); ?>
     <input type="hidden" name="a" value="edit"/>
     <input type="hidden" name="id" value="<?php echo Format::htmlchars($_REQUEST['id']); ?>"/>
-<table width="800">
-    <tbody id="dynamic-form">
+
+    <div id="dynamic-form">
     <?php if ($forms)
         foreach ($forms as $form) {
-            $form->render(['staff' => false]);
+           $form->render(['staff' => false]);
     } ?>
-    </tbody>
-</table>
+    </div>
+
 <hr>
-<p style="text-align: center;">
-    <input type="submit" value="Update"/>
-    <input type="reset" value="Reset"/>
-    <input type="button" value="Cancel" onclick="javascript:
+<p style="text-align: center;"><br><br>
+    <input class="btn btn-success" type="submit" value="Update"/>
+    <input class="btn btn-warning" type="reset" value="Reset"/>
+    <input class="btn btn-danger" type="button" value="Cancel" onclick="javascript:
         window.location.href='index.php';"/>
 </p>
 </form>
