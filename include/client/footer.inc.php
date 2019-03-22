@@ -1,6 +1,6 @@
     </div>
     <footer class="footer">
-    <div id="footer">
+    <div id="footer" style="font-family: Lato;">
         <div class="container">
 
             <div class="navbar-right copy-right">

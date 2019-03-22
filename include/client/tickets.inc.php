@@ -137,7 +137,7 @@ $tickets->values(
 );
 
 ?>
-<h1 style="margin:10px 0">
+<h1 style="color: #4E6975; font-size: 21px; padding: 10px 0px 10px 10px; margin:10px 0">
      <?php echo __('Tickets'); ?>
     <a href="<?php echo Format::htmlchars($_SERVER['REQUEST_URI']); ?>"
         ><i class="refersh-icon pull-right fas fa-sync-alt"></i> 
@@ -178,7 +178,7 @@ foreach (Topic::getHelpTopics(true) as $id=>$name) {
            <ul class="nav nav-pills" role="tablist">
 <?php if ($openTickets) { ?>
      <li role="presentation" class="<?php if ($status == 'open') echo 'active'; ?>"> 
-         <a href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>">
+         <a href="?<?php echo Http::build_query(array('a' => 'search', 'status' => 'open')); ?>" style="background-color: #547B97;">
     <?php echo _P('ticket-status', 'Open'); if ($openTickets > 0) echo '<span class="badge">'.sprintf(' %d', $openTickets).'</span>'; ?>
          </a></li>
     <?php if ($closedTickets) { ?>
