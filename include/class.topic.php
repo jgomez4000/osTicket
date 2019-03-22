@@ -57,10 +57,15 @@ implements TemplateVariable, Searchable {
                 'reverse' => 'TopicFormModel.topic',
                 'null' => true,
             ),
+            'organizations' => array(
+                'reverse' => 'TopicOrganizationModel.topic',
+                'null' => true,
+            ),
         ),
     );
 
     var $_forms;
+    var $_organizations;
 
     const DISPLAY_DISABLED = 2;
 
@@ -183,6 +188,16 @@ implements TemplateVariable, Searchable {
         return $this->_forms;
     }
 
+    function getOrganizations() {
+        if (!isset($this->_organizations)) {
+            $this->_organizations = array();
+            foreach ($this->organizations->select_related('organization') as $O) {
+                $this->_organizations[$O->organization->id] = $O->organization;
+            }
+        }
+        return $this->_organizations;
+    }
+
     function autoRespond() {
         return !$this->noautoresp;
     }
@@ -210,6 +225,10 @@ implements TemplateVariable, Searchable {
 
     function isPublic() {
         return ($this->ispublic);
+    }
+
+    function orgPcOnly() {
+        return ($this->orgpconly);
     }
 
     function getHashtable() {
@@ -316,25 +335,25 @@ implements TemplateVariable, Searchable {
             $this->flags &= ~$flag;
     }
 
-    static function getHelpTopics($publicOnly=false, $disabled=false, $localize=true, $whitelist=array()) {
+    static function getHelpTopics($publicOnly=false, $disabled=false, $localize=true, $whitelist=array(), $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
       global $cfg;
       static $topics, $names = array();
 
       // If localization is specifically requested, then rebuild the list.
       if (!$names || $localize) {
           $objects = self::objects()->values_flat(
-              'topic_id', 'topic_pid', 'ispublic', 'flags', 'topic'
+              'topic_id', 'topic_pid', 'ispublic', 'flags', 'orgpconly', 'topic'
           )
           ->order_by('sort');
 
           // Fetch information for all topics, in declared sort order
           $topics = array();
           foreach ($objects as $T) {
-              list($id, $pid, $pub, $flags, $topic) = $T;
+              list($id, $pid, $pub, $flags, $orgpconly, $topic) = $T;
 
               $display = ($flags & self::FLAG_ACTIVE);
               $topics[$id] = array('pid'=>$pid, 'public'=>$pub,
-                  'disabled'=>!$display, 'topic'=>$topic);
+                  'disabled'=>!$display, 'orgpconly'=>$orgpconly, 'topic'=>$topic);
           }
 
           $localize_this = function($id, $default) use ($localize) {
@@ -369,12 +388,9 @@ implements TemplateVariable, Searchable {
       // Apply requested filters
       $requested_names = array();
       foreach ($names as $id=>$n) {
-          $info = $topics[$id];
-          if ($publicOnly && !$info['public'])
-              continue;
-          //if topic is disabled + we're not getting all topics OR topic is not in whitelist
-          if ($info['disabled'] && (!$disabled || ($whitelist && !in_array($id, $whitelist))))
-              continue;
+          if (!self::applyFiltersToTopic($id, $topics, $publicOnly, $disabled, $whitelist, $primaryContactOnly, $limitByOrganization, $client))
+            continue;
+
           if ($disabled === self::DISPLAY_DISABLED && $info['disabled'])
               $n .= " - ".__("(disabled)");
           $requested_names[$id] = $n;
@@ -390,8 +406,41 @@ implements TemplateVariable, Searchable {
       return $requested_names;
     }
 
-    static function getPublicHelpTopics() {
-        return self::getHelpTopics(true);
+    static function applyFiltersToTopic($id, $topics, $publicOnly=false, $disabled=false, $whitelist=array(), $primaryContactOnly=false, $limitByOrganization=false, $client=null) {
+        $pass = true;
+        
+        // The first topic to filter is the one with $id.
+        $info = array('pid'=>$id);
+        
+        // Verify if the topic or it parents have filters and apply them
+        $loop = array($id=>true);
+        while (($pid = $info['pid']) && ($info = $topics[$info['pid']])) {
+            $to = TopicOrganizationModel::objects()->filter(array(
+                'topic_id'=>$pid
+            ));
+            $to_org_ids=array();
+            foreach ($to as $oid=>$to_obj) {
+                array_push($to_org_ids,$to_obj->organization_id);
+            }
+            if ($publicOnly && !$info['public'])
+                $pass = false;
+            //if topic is disabled + we're not getting all topics OR topic is not in whitelist
+            if ($info['disabled'] && (!$disabled || ($whitelist && !in_array($pid, $whitelist))))
+                $pass = false;
+            if ($primaryContactOnly && $info['orgpconly'] == 1 && $client && $client->isPrimaryContact() == 0)
+                $pass = false;
+            if ($limitByOrganization && $client && count($to) > 0 && !in_array($client->getOrganization()->id, $to_org_ids))
+                $pass = false;
+            
+            if (!$pass || isset($loop[$info['pid']]))
+                break;
+            $loop[$info['pid']] = true;
+        }
+        return $pass;
+    }
+
+    static function getPublicHelpTopics($client) {
+        return self::getHelpTopics(true, false, true, array(), true, true, $client);
     }
 
     static function getAllHelpTopics($localize=false) {
@@ -452,6 +501,7 @@ implements TemplateVariable, Searchable {
         $this->page_id = $vars['page_id'] ?: 0;
         $this->isactive = $vars['isactive'];
         $this->ispublic = $vars['ispublic'];
+        $this->orgpconly = !!$vars['orgpconly'];
         $this->sequence_id = $vars['custom-numbers'] ? $vars['sequence_id'] : 0;
         $this->number_format = $vars['custom-numbers'] ? $vars['number_format'] : '';
         $this->flags = $vars['custom-numbers'] ? self::FLAG_CUSTOM_NUMBERS : $this->flags;
@@ -515,6 +565,7 @@ implements TemplateVariable, Searchable {
                 static::updateSortOrder();
             }
             $this->updateForms($vars, $errors);
+            $this->updateOrganizations($vars, $errors);
         }
         return $rv;
     }
@@ -574,6 +625,43 @@ implements TemplateVariable, Searchable {
         return true;
     }
 
+    function updateOrganizations($vars, &$errors) {
+        // Consider all the organizations in the request
+        $current = array();
+        if (is_array($vars['organizations'])) {
+            $organization_ids = $vars['organizations'];
+        } else {
+            $organization_ids = array();
+        }
+        if (is_array($organization_ids)) {
+            $organizations = TopicOrganizationModel::objects()
+                ->select_related('organization')
+                ->filter(array('topic_id' => $this->getId()));
+            foreach ($organizations as $O) {
+                if (false !== ($idx = array_search($O->organization_id, $organization_ids))) {
+                    $current[] = $O->organization_id;
+                    $O->save();
+                    unset($organization_ids[$idx]);
+                }
+                elseif ($O->organization->get('type') != 'T') {
+                    $O->delete();
+                }
+            }
+            foreach ($organization_ids as $id) {
+                if (in_array($id, $current)) {
+                    // Don't add a form more than once
+                    continue;
+                }
+                $to = new TopicOrganizationModel(array(
+                    'topic_id' => $this->getId(),
+                    'organization_id' => $id
+                ));
+                $to->save();
+            }
+        }
+        return true;
+    }
+
     function save($refetch=false) {
         if ($this->dirty)
             $this->updated = SqlFunction::NOW();
@@ -618,6 +706,22 @@ class TopicFormModel extends VerySimpleModel {
             ),
             'form' => array(
                 'constraint' => array('form_id' => 'DynamicForm.id'),
+            ),
+        ),
+    );
+}
+
+// Basic Organization Relationship Model
+class TopicOrganizationModel extends VerySimpleModel {
+    static $meta = array(
+        'table' => TOPIC_ORGANIZATION_TABLE,
+        'pk' => array('id'),
+        'joins' => array(
+            'topic' => array(
+                'constraint' => array('topic_id' => 'Topic.topic_id'),
+            ),
+            'organization' => array(
+                'constraint' => array('organization_id' => 'Organization.id'),
             ),
         ),
     );

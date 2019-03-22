@@ -140,6 +140,9 @@ if($_POST){
                         }
                         break;
                     case 'delete':
+                        $h = TopicOrganizationModel::objects()->filter(array(
+                            'topic_id__in'=>$_POST['ids']
+                        ))->delete();
                         $i = Topic::objects()->filter(array(
                             'topic_id__in'=>$_POST['ids']
                         ))->delete();

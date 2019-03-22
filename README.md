@@ -86,6 +86,12 @@ the migration.
 
 View the UPGRADING.txt file for other todo items to complete your upgrade.
 
+Database Schema
+----
+The complete database schema is in the file setup/inc/streams/core/install-mysql.sql.
+The files under the folder include/upgrader/streams/core have the format: first_eight_old_hash_number-first_eight_new_hash_number.patch.sql.
+The file include/upgrader/streams/core.sig has the new hash number.
+
 Help
 ----
 Visit the [wiki](http://osticket.com/wiki/Home) or the
