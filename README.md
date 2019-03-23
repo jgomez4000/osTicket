@@ -89,8 +89,12 @@ View the UPGRADING.txt file for other todo items to complete your upgrade.
 Database Schema
 ----
 The complete database schema is in the file setup/inc/streams/core/install-mysql.sql.
+
 The files under the folder include/upgrader/streams/core have the format: first_eight_old_hash_number-first_eight_new_hash_number.patch.sql.
-The file include/upgrader/streams/core.sig has the new hash number.
+
+The file include/upgrader/streams/core.sig has the newest hash number. Within the key schema_signature, the table config has the last hash number that has been applied.
+
+The procedure that detects wich patches to apply is called getPatches and is in class.migrater.php.
 
 Help
 ----
